@@ -3,8 +3,8 @@ import { VENUES } from "../config/venues.js";
 
 const venue = VENUES.find(v => v.handler === "willisPark");
 
-export async function checkWillisPark(page) {
-  console.log("⏳ Checking Willoughby (Willis Park)...");
+export async function checkVoyagerCourts(venue, page) {
+  console.log("⏳ Checking Voyager Courts...");
 
   await page.goto(venue.url, { waitUntil: "load" });
 
@@ -18,7 +18,7 @@ export async function checkWillisPark(page) {
   for (const pageIndex of [0, 1]) {
     const pageLink = `#page_${pageIndex}`;
 
-    // Edge case: one page might not exist
+    // Case: another page might not exist
     if (!(await page.$(pageLink))) continue;
 
     // Click page tab (JS re-renders table for second page of courts)

@@ -1,15 +1,13 @@
 import { isWithinNextTwoHours } from "../utils/time.js";
+import { VENUES } from "../config/venues.js";
+
+const venue = VENUES.find(v => v.handler === "lindfield");
 
 export async function checkLindfield(page) {
-  const results = [];
+  console.log("⏳ Checking Tryon Road Park...");
 
-  await page.goto(
-    "https://krg.bookable.net.au/venues/8/lindfield-soldiers-memorial-park-tennis-courts",
-    { waitUntil: "load" }
-  );
-console.log("✅ Page loaded");
+  await page.goto( venue.url, { waitUntil: "load" });
 
-  console.log("⏳ Waiting for timeslots to appear...");
   await page.waitForSelector("ul.schedule-bar.daybar li.li-timebar", { timeout: 60000 });
 
 
@@ -28,7 +26,8 @@ console.log("✅ Page loaded");
         const available =
           statusBar &&
           !statusBar.className.includes("status-past") &&
-          !statusBar.className.includes("status-closed");
+          !statusBar.className.includes("status-closed") &&
+          !statusBar.className.includes("status-booked");
         // const tooltip = statusBar?.getAttribute("uib-tooltip-html") || "No tooltip";
 
         // Extract start time from timebar class
@@ -54,19 +53,19 @@ console.log("✅ Page loaded");
 
     // Add court name to each slot
     for (const slot of availableOnly) {
-      const hour12 = slot.hour % 12 === 0 ? 12 : slot.hour % 12;
-      const ampm = slot.hour < 12 ? "am" : "pm";
+      // const hour12 = slot.hour % 12 === 0 ? 12 : slot.hour % 12;
+      // const ampm = slot.hour < 12 ? "am" : "pm";
       const minuteStr = slot.minute.toString().padStart(2, "0");
-      const timeText = `${hour12}:${minuteStr}${ampm}`;
+      // const timeText = `${hour12}:${minuteStr}${ampm}`; // changes to '9:45pm' format
+      const timeText = `${slot.hour}:${minuteStr}`;
 
       availableSlots.push({
+        venue: venue.name,
         court: courtName,
         time: timeText,
       });
     }
   }
-
-  console.log("🎾 All available courts retrieved");
 
   // Only show available slots within the next 2 hours
   // for (const slot of availableSlots) {

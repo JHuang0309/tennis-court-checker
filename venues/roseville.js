@@ -1,14 +1,15 @@
 import { isWithinNextTwoHours } from "../utils/time.js";
+import { VENUES } from "../config/venues.js";
+
+const venue = VENUES.find(v => v.handler === "roseville");
 
 export async function checkRoseville(page) {
+  console.log("⏳ Checking Roseville Park...");
 
-  await page.goto(
-    "https://krg.bookable.net.au/venues/44/roseville-park-tennis-courts",
-    { waitUntil: "load" }
-  );
-  console.log("✅ Page loaded");
+  const results = [];
 
-  console.log("⏳ Waiting for timeslots to appear...");
+  await page.goto( venue.url, { waitUntil: "load" });
+
   await page.waitForSelector("ul.schedule-bar.daybar li.li-timebar", { timeout: 60000 });
 
 
@@ -27,7 +28,8 @@ export async function checkRoseville(page) {
         const available =
           statusBar &&
           !statusBar.className.includes("status-past") &&
-          !statusBar.className.includes("status-closed");
+          !statusBar.className.includes("status-closed") && 
+          !statusBar.className.includes("status-booked");
         // const tooltip = statusBar?.getAttribute("uib-tooltip-html") || "No tooltip";
 
         // Extract start time from timebar class
@@ -53,33 +55,32 @@ export async function checkRoseville(page) {
 
     // Add court name to each slot
     for (const slot of availableOnly) {
-      const hour12 = slot.hour % 12 === 0 ? 12 : slot.hour % 12;
-      const ampm = slot.hour < 12 ? "am" : "pm";
+      // const hour12 = slot.hour % 12 === 0 ? 12 : slot.hour % 12;
+      // const ampm = slot.hour < 12 ? "am" : "pm";
+
+      // Uncomment the above and use this if you want '9:45pm' format
+      // const timeText = `${hour12}:${minuteStr}${ampm}`; 
       const minuteStr = slot.minute.toString().padStart(2, "0");
-      const timeText = `${hour12}:${minuteStr}${ampm}`;
+      const timeText = `${slot.hour}:${minuteStr}`;
 
       availableSlots.push({
+        venue: venue.name,
         court: courtName,
         time: timeText,
       });
     }
   }
 
-  console.log("🎾 All available courts retrieved");
-
   // Only show available slots within the next 2 hours
   // for (const slot of availableSlots) {
 
-  //   const slotDate = new Date(slot.text); // adjust time formt per site
+  //     const slotDate = new Date(slot.time); // adjust time formt per site
 
-  //   if (isWithinNextTwoHours(slotDate)) {
-  //     results.push({
-  //       venue: "Roseville Park",
-  //       time: slot.text,
-  //       bookingLink: slot.link
-  //     });
+  //     if (isWithinNextTwoHours(slotDate)) {
+  //       results.push(slot);
+  //     }
   //   }
-  // }
 
+  // return results;
   return availableSlots;
 }

@@ -42,7 +42,15 @@ useEffect(() => {
     <div className="min-h-screen bg-gray-100 flex flex-col">
       {/* Navbar */}
       <nav className="bg-white shadow p-4 flex items-center justify-between">
-        <h2 className="text-xl font-bold mb-2 text-left">Court Scanner</h2>
+        <div>
+          <img 
+            src="/skyscanner.png"  // <-- file inside public folder
+            alt="Court Scanner Logo" 
+            className="h-10 w-10 object-contain" // optional styling
+            />
+          <h2 className="text-xl font-bold mb-2 text-left">Court Scanner</h2>
+        </div>
+        
         <div className="flex items-center gap-4">
           <VenueFilter
             venues={venueObjects}

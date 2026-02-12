@@ -2,7 +2,23 @@
 import { useState } from "react";
 import { TimeBar } from "./TimeBar";
 
-export default function VenueCard({ venue, courts }: { venue: string; courts: Array<{ court: string; time: string; venue: string; link: string;}> }) {
+function formatDuration(start: string, end: string): string {
+  const [startH, startM] = start.split(":").map(Number);
+  const [endH, endM] = end.split(":").map(Number);
+
+  let minutes = (endH * 60 + endM) - (startH * 60 + startM);
+  if (minutes <= 0) return "";
+
+  const hrs = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+
+  if (hrs > 0 && mins > 0) return `${hrs} hr${hrs > 1 ? "s" : ""} ${mins} min${mins > 1 ? "s" : ""}`;
+  if (hrs > 0) return `${hrs} hr${hrs > 1 ? "s" : ""}`;
+  return `${mins} min${mins > 1 ? "s" : ""}`;
+}
+
+
+export default function VenueCard({ venue, courts, searchHour }: { venue: string; courts: Array<{ court: string; time: string; venue: string; link: string;}>; searchHour: number }) {
   const [showAll, setShowAll] = useState(false);
 
   // Check if a venue is Willis Park (Voyager)
@@ -23,18 +39,28 @@ export default function VenueCard({ venue, courts }: { venue: string; courts: Ar
 
   // Check if court has at least 1 hour of consecutive availability and return the hour block
 const getFullConsecutiveBlock = (
-  times: string[]
+  times: string[],
+  searchHour: number
 ): { start: string; end: string } | null => {
   if (times.length === 0) return null;
 
   const now = new Date();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  
+  // if searchHour is current hour, start from next 30-min/15-min interval
+  let searchTimeMinutes;
+  if (searchHour === now.getHours()) {
+    // Round up to next interval
+    searchTimeMinutes = currentMinutes;
+  } else {
+    searchTimeMinutes = searchHour * 60;
+  }
 
   const interval = isWillisPark(venue) ? 30 : 15;
 
   const validTimes = times
     .map(timeToMinutes)
-    .filter(t => t >= currentMinutes && t <= currentMinutes + 180) // allow longer blocks
+    .filter(t => t >= searchTimeMinutes && t <= searchTimeMinutes + 180) // allow longer blocks
     .sort((a, b) => a - b);
 
   if (validTimes.length === 0) return null;
@@ -74,8 +100,6 @@ const getFullConsecutiveBlock = (
   };
 };
 
-
-
   // Group courts by name and check each for 1-hour availability
   const courtsByName = new Map<string, string[]>();
   courts.forEach(court => {
@@ -88,7 +112,7 @@ const getFullConsecutiveBlock = (
   // Filter top 2 courts with at least 1 hour of availability
   const topCourts = Array.from(courtsByName.entries())
   .map(([courtName, times]) => {
-    const block = getFullConsecutiveBlock(times);
+    const block = getFullConsecutiveBlock(times, searchHour);
     if (!block) return null;
 
     return {
@@ -121,17 +145,24 @@ const getFullConsecutiveBlock = (
                   key={idx}
                   className="flex justify-between items-center p-3 border border-gray-200 rounded"
                 >
-                  <span className="font-medium text-gray-900">{court.court}</span>
-                  <span className="text-sm font-semibold text-gray-700">
-                    {court.timeRange.start} - {court.timeRange.end}
-                  </span>
+                  <div>
+                    <span className="font-medium text-gray-900">{court.court}</span>
+                  </div>
+                  <div>
+                    <span className="text-sm font-semibold text-gray-700">
+                      {court.timeRange.start} - {court.timeRange.end}{" "}
+                    </span>
+                    <span className="text-sm text-gray-500 italic ml-2">
+                      {formatDuration(court.timeRange.start, court.timeRange.end)}
+                    </span>
+                  </div>
                 </div>
               );
             })}
           </div>
-
+          <div className="w-px bg-gray-300 mx-2" />
           {/* Book now & count */}
-          <div className="flex flex-col items-center mt-3 ml-5 basis-1/5">
+          <div className="flex flex-col items-center mt-3 basis-1/5">
             <span className="text-sm font-medium text-gray-700">
               {topCourts.length == 1 ? (
                 <p>1 court available</p>
@@ -147,19 +178,26 @@ const getFullConsecutiveBlock = (
           </div>
         </div>
       ) : (
-        <p className="text-gray-500 text-sm">No courts available in the next 2 hours</p>
+        <p className="text-gray-500 text-sm">No courts available in the next 2 hours (min 1 hrs)</p>
       )}
       
 
       {/* Show all courts */}
       {allCourts.length > 0 && (
-        <>
-          <button
-            onClick={() => setShowAll(!showAll)}
-            className="mt-2 text-blue-600"
-          >
-            {showAll ? "Hide other courts" : "Show all courts"}
-          </button>
+        <div className="flex-col">
+          {/* Show all courts button */}
+          <div className="flex justify-start mt-2 ml-1">
+            <span
+              onClick={() => setShowAll(!showAll)}
+              className="flex items-center text-blue-600 text-sm font-medium cursor-pointer border-b-1 border-transparent hover:border-blue-100"
+            >
+              {showAll ? "Hide other courts" : "Show all courts"}
+              {/* Double arrow down icon */}
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="size-4 ml-1">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 5.25 7.5 7.5 7.5-7.5m-15 6 7.5 7.5 7.5-7.5" />
+              </svg>
+            </span>
+          </div>
 
           {showAll && (
             <div className="mt-4 space-y-3">
@@ -172,12 +210,17 @@ const getFullConsecutiveBlock = (
                     <span className="text-sm font-medium text-gray-900">{court.court}</span>
                     <span className="text-xs text-gray-500">{court.times.length} available slots</span>
                   </div>
-                  <TimeBar times={court.times} isWillisPark={isWillisPark(venue)} />
+                  <TimeBar
+                    times={court.times}
+                    isWillisPark={isWillisPark(venue)}
+                    searchHour={searchHour}
+                  />
                 </div>
               ))}
             </div>
           )}
-        </>
+        </div>
+
       )}
     </div>
   );

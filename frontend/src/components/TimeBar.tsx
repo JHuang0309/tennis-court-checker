@@ -3,9 +3,10 @@ import { useMemo } from "react";
 interface TimeBarProps {
   times: string[]
   isWillisPark: boolean
+  searchHour: number
 }
 
-export function TimeBar({ times, isWillisPark }: TimeBarProps) {
+export function TimeBar({ times, isWillisPark, searchHour }: TimeBarProps) {
   // Generate all possible time slots in a 24-hour period
   const allSlots = useMemo(() => {
     const slots: string[] = [];
@@ -29,11 +30,9 @@ export function TimeBar({ times, isWillisPark }: TimeBarProps) {
   const availableSet = new Set(times);
 
   // Show only relevant hours (5am to 10pm)
-  const now = new Date();
-  const startHour = now.getHours();
   const visibleSlots = allSlots.filter(slot => {
     const hour = parseInt(slot.split(':')[0], 10);
-    return hour >= startHour && hour <= startHour + 6 && hour <= 22; // show 6 hours
+    return hour >= searchHour && hour <= searchHour + 4 && hour <= 22; // only show 6 hours
   });
 
   return (

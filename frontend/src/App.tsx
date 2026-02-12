@@ -3,6 +3,7 @@ import axios from "axios";
 import './App.css'
 import VenueCard from './components/VenueCard'
 import { VenueFilter } from './components/VenueFilter'
+import { SearchTimeSelector } from './components/SearchTimeSelector';
 
 function App() {
   const [courtsData, setCourtsData] = useState<any[] | null>(null)
@@ -10,6 +11,7 @@ function App() {
   const [allVenues, setAllVenues] = useState<string[]>([]);
   const [selectedVenues, setSelectedVenues] = useState<string[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [searchHour, setSearchHour] = useState(new Date().getHours());
 
   async function fetchCourts() {
     setRefreshing(true)
@@ -62,7 +64,12 @@ function App() {
         </div>
       </nav>
 
-      <div className="flex flex-1 p-6 gap-6 min-h-screen justify-center">
+      {/* Search time selector */}
+      <span className='flex justify-start px-20'>  
+        <SearchTimeSelector onChange={setSearchHour} />
+      </span>
+    
+      <div className="flex flex-1 px-20 py-5 gap-6 min-h-screen justify-center">
         {refreshing ? (
           <p className='text-lg font-medium text-blue-600 text-lg animate-pulse mt-100'>Finding courts near you...</p>
         ) : (
@@ -72,6 +79,7 @@ function App() {
                 key={venue}
                 venue={venue}
                 courts={(filteredCourts ?? []).filter(c => c.venue === venue)}
+                searchHour={searchHour}  
               />
             ))}
           </div>

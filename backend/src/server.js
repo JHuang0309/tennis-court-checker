@@ -19,8 +19,8 @@ app.get('/api/scan', async (req, res) => {
         res.setHeader('Access-Control-Allow-Origin', '*')
         res.json(results)
     } catch (err) {
-        console.error('Error running check:', err)
-        res.status(500).json({ error: 'Failed to run check' })
+        console.error('Error running scan:', err)
+        res.status(500).json({ error: 'Failed to run api/scan' })
     }
 })
 

@@ -4,7 +4,7 @@ import { checkVoyagerCourts } from "./venues/voyager.js";
 import { checkKuringGaiCourts } from "./venues/kuringgai.js"
 import { VENUES } from "./config/venues.js";
 
-async function runCheck() {
+export async function runCheck() {
   const browser = await chromium.launch({ headless: true, slowMo: 200 });
 
   const context = await browser.newContext({
@@ -28,16 +28,18 @@ async function runCheck() {
 
   if (results.length) {
     console.log("🎾 All available courts retrieved");
-    console.table(results);
+    // console.table(results);
     // const summarizedTable = summarizeSlots(results);
     // console.table(summarizedTable);
   } else {
     console.log("No courts available right now");
   }
+
+  return results;
 }
 
 // Run immediately
-runCheck();
+// runCheck();
 
 // Run every 5 minutes
 // cron.schedule("*/5 * * * *", runCheck);

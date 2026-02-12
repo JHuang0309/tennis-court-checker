@@ -86,7 +86,8 @@ export async function checkVoyagerCourts(venue, page) {
         results.push({
           venue: venue.name,
           court: courtName,
-          time: timeString
+          time: timeString,
+          link: `${venue.url}`,
         });
       }
     }

@@ -14,17 +14,18 @@ function App() {
   const [searchHour, setSearchHour] = useState(new Date().getHours());
 
   const fetchCourts = async () => {
-  try {
-    const res = await api.get("api/scan");
-    setCourtsData(res.data);
+    setRefreshing(true)
+    try {
+      const res = await api.get("api/scan");
+      setCourtsData(res.data);
 
-    const venues = [...new Set(res.data.map((court: any) => court.venue))] as string[];
-    setAllVenues(venues);
-    setSelectedVenues(venues);
-    setRefreshing(false)
-  } catch (err) {
-    console.error(err);
-  }
+      const venues = [...new Set(res.data.map((court: any) => court.venue))] as string[];
+      setAllVenues(venues);
+      setSelectedVenues(venues);
+      setRefreshing(false)
+    } catch (err) {
+      console.error(err);
+    }
 };
 
 useEffect(() => {
@@ -62,7 +63,7 @@ useEffect(() => {
           {/* Refresh Button */}
           <button
             onClick={fetchCourts}
-            className="bg-blue-600 text-black px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+            className="bg-blue-600 text-black text-sm px-4 py-2 rounded hover:bg-blue-700 transition-colors"
           >
             {refreshing ? "Refreshing..." : "Refresh"}
           </button>
@@ -76,7 +77,7 @@ useEffect(() => {
     
       <div className="flex flex-1 px-20 py-5 gap-6 min-h-screen justify-center">
         {refreshing ? (
-          <p className='text-lg font-medium text-blue-600 text-lg animate-pulse mt-100'>Finding courts near you...</p>
+          <p className='text-lg font-medium text-blue-600 animate-pulse mt-100'>Finding courts near you...</p>
         ) : (
           <div className="flex-1 space-y-4">
             {selectedVenues.length > 0 ? (

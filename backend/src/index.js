@@ -12,7 +12,7 @@ export async function runCheck() {
   });
 
   const results = [];
-  const date = new Date().toISOString().split("T")[0];
+  const date = new Date().toLocaleDateString('en-CA');
 
   for (const venue of VENUES) {
   try {

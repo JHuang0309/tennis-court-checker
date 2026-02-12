@@ -2,19 +2,19 @@ export const VENUES = [
   {
     name: "Roseville Park",
     handler: "roseville",
-    url: "https://krg.bookable.net.au/venues/44/roseville-park-tennis-courts",
+    url: "https://krg.bookable.net.au/booking-refinement?venueId=44&date=",
     owner: "kuringGai"
   },
   {
     name: "Lindfield Soldiers Memorial",
     handler: "lindfield",
-    url: "https://krg.bookable.net.au/venues/8/lindfield-soldiers-memorial-park-tennis-courts",
+    url: "https://krg.bookable.net.au/booking-refinement?venueId=8&date=",
     owner: "kuringGai"
   },
   {
     name: "Allan Small Park",
     handler: "allanSmall",
-    url: "https://krg.bookable.net.au/venues/30/allan-small-park-tennis-courts",
+    url: "https://krg.bookable.net.au/booking-refinement?venueId=30&date=",
     owner: "kuringGai"
   },
   {
@@ -26,37 +26,37 @@ export const VENUES = [
   {
     name: "Lindfield Community Centre",
     handler: "lindfieldComunityCEntre",
-    url: "https://krg.bookable.net.au/venues/55/lindfield-community-centre-tennis-courts",
+    url: "https://krg.bookable.net.au/booking-refinement?venueId=55&date=",
     owner: "kuringGai"
   },
   {
     name: "Queen Elizabeth Reserve",
     handler: "queenElizabeth",
-    url: "https://krg.bookable.net.au/venues/49/queen-elizabeth-reserve-tennis-courts",
+    url: "https://krg.bookable.net.au/booking-refinement?venueId=49&date=",
     owner: "kuringGai"
   },
   {
     name: "Loyal Henry Park",
     handler: "loyalHenry",
-    url: "https://krg.bookable.net.au/venues/53/loyal-henry-park-tennis-courts",
+    url: "https://krg.bookable.net.au/booking-refinement?venueId=53&date=",
     owner: "kuringGai"
   },
   {
     name: "Gordon Recreation Ground",
     handler: "gordonRecreation",
-    url: "https://krg.bookable.net.au/venues/35/gordon-recreation-ground-tennis-courts",
+    url: "https://krg.bookable.net.au/booking-refinement?venueId=35&date=",
     owner: "kuringGai"
   },
   {
     name: "Killara Park",
     handler: "killaraPark",
-    url: "https://krg.bookable.net.au/venues/48/killara-park-tennis-courts",
+    url: "https://krg.bookable.net.au/booking-refinement?venueId=48&date=",
     owner: "kuringGai"
   },
   {
     name: "Regimental Park",
     handler: "regimental",
-    url: "https://krg.bookable.net.au/venues/39/regimental-park-tennis-courts",
+    url: "https://krg.bookable.net.au/booking-refinement?venueId=39&date=",
     owner: "kuringGai"
   },
 ];

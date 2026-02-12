@@ -12,10 +12,12 @@ async function runCheck() {
   });
 
   const results = [];
+  const date = new Date().toISOString().split("T")[0];
+
   for (const venue of VENUES) {
     let venueResults = [];
     if (venue.owner === "kuringGai") {
-      venueResults = await checkKuringGaiCourts(await context.newPage(), venue);
+      venueResults = await checkKuringGaiCourts(await context.newPage(), venue, date);
     } else if (venue.owner === "voyager") {
       venueResults = await checkVoyagerCourts(venue, await context.newPage());
     }

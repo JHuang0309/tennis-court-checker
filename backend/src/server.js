@@ -1,7 +1,12 @@
 import express from 'express'
 import { runCheck } from './index.js'
+import cors from "cors";
 
 const app = express()
+
+app.use(cors({
+  origin: process.env.FRONTEND_URL || "*" // only allow frontend in prod
+}));
 
 app.get('/api', (req, res) => {
     res.json({ data: ['hello world'] })

@@ -4,6 +4,7 @@ import './App.css'
 import VenueCard from './components/VenueCard'
 import { VenueFilter } from './components/VenueFilter'
 import { SearchTimeSelector } from './components/SearchTimeSelector';
+import api from './apiClient';
 
 function App() {
   const [courtsData, setCourtsData] = useState<any[] | null>(null)
@@ -13,28 +14,24 @@ function App() {
   const [refreshing, setRefreshing] = useState(false);
   const [searchHour, setSearchHour] = useState(new Date().getHours());
 
-  async function fetchCourts() {
-    setRefreshing(true)
-    setError(null)
-    try {
-      const res = await axios.get("http://localhost:5005/api/scan"); // Replace with your API
-      setCourtsData(res.data);
-      
-      // Obtain unique venues
-      const venues = [...new Set(res.data.map((court: any) => court.venue))] as string[];
-      setAllVenues(venues);
-      setSelectedVenues(venues); // Default: all selected
+  const fetchCourts = async () => {
+  try {
+    const res = await api.get("/courts");
+    setCourtsData(res.data);
 
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch')
-    } finally {
-      setRefreshing(false)
-    }
+    const venues = [...new Set(res.data.map((court: any) => court.venue))] as string[];
+    setAllVenues(venues);
+    setSelectedVenues(venues);
+  } catch (err) {
+    console.error(err);
   }
+};
 
-  useEffect(() => {
-    fetchCourts()
-  }, [])
+useEffect(() => {
+  setError(null)
+  setRefreshing(false)
+  fetchCourts();
+}, []);
 
   const filteredCourts = courtsData?.filter(court => selectedVenues.includes(court.venue));
 

@@ -45,4 +45,4 @@ RUN npx playwright install --with-deps
 EXPOSE 5005
 
 # Start the server
-CMD ["node", "server.js"]
+CMD ["node", "src/server.js"]

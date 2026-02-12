@@ -124,6 +124,19 @@ const getFullConsecutiveBlock = (
   .filter((c): c is { court: string; timeRange: { start: string; end: string }; venue: string } => c !== null)
   .slice(0, 2);
 
+  const allAvailableCourts = Array.from(courtsByName.entries())
+  .map(([courtName, times]) => {
+    const block = getFullConsecutiveBlock(times, searchHour);
+    if (!block) return null;
+
+    return {
+      court: courtName,
+      timeRange: block,
+      venue
+    };
+  })
+  .filter((c): c is { court: string; timeRange: { start: string; end: string }; venue: string } => c !== null)
+
   // All courts
   const allCourts = Array.from(courtsByName.entries())
     .map(([courtName, times]) => ({
@@ -164,10 +177,10 @@ const getFullConsecutiveBlock = (
           {/* Book now & count */}
           <div className="flex flex-col items-center mt-3 basis-1/5">
             <span className="text-sm font-medium text-gray-700">
-              {topCourts.length == 1 ? (
+              {allAvailableCourts.length == 1 ? (
                 <p>1 court available</p>
               ) : (
-                <p>{topCourts.length} courts available</p>
+                <p>{allAvailableCourts.length} courts available</p>
               )} 
             </span>
             <a href={venueBookingLink} target="_blank" rel="noreferrer">

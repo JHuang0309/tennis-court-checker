@@ -9,7 +9,7 @@ COPY package*.json ./
 RUN npm install
 
 # Copy source code
-COPY src/ ./src/
+COPY ./src/ ./src/
 
 # Expose port
 EXPOSE 5005

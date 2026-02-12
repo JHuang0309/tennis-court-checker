@@ -3,7 +3,7 @@ import { isWithinNextTwoHours } from "../utils/time.js";
 export async function checkKuringGaiCourts(page, venue, date) {
   console.log(`⏳ Checking ${venue.name}...`);
 
-  await page.goto( `${venue.url}${date}`, { waitUntil: "load" });
+  await page.goto( `${venue.url}${date}`, { waitUntil: "domcontentloaded" });
 
   await page.waitForSelector("venue-bookable-schedule ul.schedule-bar.daybar li.li-timebar", { timeout: 60000 });
 

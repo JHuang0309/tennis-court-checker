@@ -6,7 +6,7 @@ const venue = VENUES.find(v => v.handler === "willisPark");
 export async function checkVoyagerCourts(venue, page) {
   console.log("⏳ Checking Voyager Courts...");
 
-  await page.goto(venue.url, { waitUntil: "load" });
+  await page.goto(venue.url, { waitUntil: "domcontentloaded" });
 
   // Wait for booking table to exist once
   await page.waitForSelector("table.BookingSheet thead td.BookingSheetCategoryLabel", { timeout: 60000 });

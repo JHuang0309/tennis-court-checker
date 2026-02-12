@@ -5,7 +5,7 @@ import { checkKuringGaiCourts } from "./venues/kuringgai.js"
 import { VENUES } from "./config/venues.js";
 
 export async function runCheck() {
-  const browser = await chromium.launch({ headless: true, slowMo: 200 });
+  const browser = await chromium.launch({ headless: true, slowMo: 200, args: ['--no-sandbox', '--disable-setuid-sandbox']});
 
   const context = await browser.newContext({
     userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
@@ -15,14 +15,20 @@ export async function runCheck() {
   const date = new Date().toISOString().split("T")[0];
 
   for (const venue of VENUES) {
+  try {
+    const page = await context.newPage();
     let venueResults = [];
     if (venue.owner === "kuringGai") {
-      venueResults = await checkKuringGaiCourts(await context.newPage(), venue, date);
+      venueResults = await checkKuringGaiCourts(page, venue, date);
     } else if (venue.owner === "voyager") {
-      venueResults = await checkVoyagerCourts(venue, await context.newPage());
+      venueResults = await checkVoyagerCourts(venue, page);
     }
     results.push(...venueResults);
+    await page.close();
+  } catch (err) {
+    console.error(`❌ Error scraping ${venue.name}:`, err);
   }
+}
 
   await browser.close();
 

@@ -15,7 +15,7 @@ function App() {
 
   const fetchCourts = async () => {
   try {
-    const res = await api.get("/courts");
+    const res = await api.get("api/scan");
     setCourtsData(res.data);
 
     const venues = [...new Set(res.data.map((court: any) => court.venue))] as string[];

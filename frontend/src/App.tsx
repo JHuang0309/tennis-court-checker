@@ -21,6 +21,7 @@ function App() {
     const venues = [...new Set(res.data.map((court: any) => court.venue))] as string[];
     setAllVenues(venues);
     setSelectedVenues(venues);
+    setRefreshing(false)
   } catch (err) {
     console.error(err);
   }
@@ -28,7 +29,7 @@ function App() {
 
 useEffect(() => {
   setError(null)
-  setRefreshing(false)
+  setRefreshing(true)
   fetchCourts();
 }, []);
 
@@ -44,7 +45,7 @@ useEffect(() => {
       <nav className="bg-white shadow p-4 flex items-center justify-between">
         <div className='flex items-center'>
           <img 
-            src="/skyscanner.png"  // <-- file inside public folder
+            src="/skyscanner.png" 
             alt="Court Scanner Logo" 
             className="h-10 w-10 object-contain" // optional styling
             />
@@ -78,14 +79,20 @@ useEffect(() => {
           <p className='text-lg font-medium text-blue-600 text-lg animate-pulse mt-100'>Finding courts near you...</p>
         ) : (
           <div className="flex-1 space-y-4">
-            {selectedVenues.map(venue => (
-              <VenueCard
-                key={venue}
-                venue={venue}
-                courts={(filteredCourts ?? []).filter(c => c.venue === venue)}
-                searchHour={searchHour}  
-              />
-            ))}
+            {selectedVenues.length > 0 ? (
+              selectedVenues.map(venue => (
+                <VenueCard
+                  key={venue}
+                  venue={venue}
+                  courts={(filteredCourts ?? []).filter(c => c.venue === venue)}
+                  searchHour={searchHour}
+                />
+              ))
+            ) : (
+              <p className="text-lg font-medium text-gray-700 mt-100 text-center">
+                No available courts
+              </p>
+            )}
           </div>
         )}
       </div>

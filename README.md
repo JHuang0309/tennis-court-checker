@@ -32,5 +32,6 @@ npm run start
 
 ### Frontend
 The frontend is deployed and accessible at:
-[Link Text](https://court-scanner-seven.vercel.app/)
+[Court Scanner](https://court-scanner-seven.vercel.app/)
+
 

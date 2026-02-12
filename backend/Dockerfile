@@ -1,5 +1,4 @@
-# Use official Node.js image
-FROM node:20
+FROM mcr.microsoft.com/playwright:focal
 
 # Set working directory
 WORKDIR /app

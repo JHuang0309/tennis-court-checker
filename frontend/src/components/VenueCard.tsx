@@ -113,6 +113,7 @@ const getFullConsecutiveBlock = (
   const topCourts = Array.from(courtsByName.entries())
   .map(([courtName, times]) => {
     const block = getFullConsecutiveBlock(times, searchHour);
+    console.log(block)
     if (!block) return null;
 
     return {
@@ -122,6 +123,23 @@ const getFullConsecutiveBlock = (
     };
   })
   .filter((c): c is { court: string; timeRange: { start: string; end: string }; venue: string } => c !== null)
+  .sort((a, b) => {
+    const aStart = timeToMinutes(a.timeRange.start);
+    const bStart = timeToMinutes(b.timeRange.start);
+
+    // Sort by earliest start time
+    if (aStart !== bStart) {
+      return aStart - bStart;
+    }
+
+    // If same start time → sort by longest duration
+    const aDuration =
+      timeToMinutes(a.timeRange.end) - aStart;
+    const bDuration =
+      timeToMinutes(b.timeRange.end) - bStart;
+
+    return bDuration - aDuration; // longer first
+  })
   .slice(0, 2);
 
   const allAvailableCourts = Array.from(courtsByName.entries())
@@ -206,8 +224,8 @@ const getFullConsecutiveBlock = (
             >
               {showAll ? "Hide other courts" : "Show all courts"}
               {/* Double arrow down icon */}
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="size-4 ml-1">
-                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 5.25 7.5 7.5 7.5-7.5m-15 6 7.5 7.5 7.5-7.5" />
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-4 ml-1">
+                <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 5.25 7.5 7.5 7.5-7.5m-15 6 7.5 7.5 7.5-7.5" />
               </svg>
             </span>
           </div>

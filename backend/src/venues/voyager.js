@@ -1,14 +1,93 @@
 import { isWithinNextTwoHours } from "../utils/time.js";
 import { VENUES } from "../config/venues.js";
 
-const venue = VENUES.find(v => v.handler === "willisPark");
-
-export async function checkVoyagerCourts(venue, page) {
+export async function checkVoyagerCourts(venue, page, targetDate) {
   console.log("⏳ Checking Voyager Courts...");
 
   await page.goto(venue.url, { waitUntil: "domcontentloaded" });
 
-  // Wait for booking table to exist once
+  // Wait for calendar to exist 
+  await page.waitForSelector("#datepicker");
+
+  const target = new Date(targetDate);
+  const targetMonth = target.getMonth(); // 0-11
+  const targetYear = target.getFullYear();
+  const targetDay = target.getDate();
+
+  // Check if already on the correct date
+  const alreadySelected = await page.evaluate(
+    ({ day, month, year }) => {
+      const active = document.querySelector(
+        ".ui-datepicker-calendar td.ui-datepicker-current-day"
+      );
+
+      if (!active) return false;
+
+      const activeDay = active.textContent.trim();
+      const activeMonth = parseInt(active.getAttribute("data-month"), 10);
+      const activeYear = parseInt(active.getAttribute("data-year"), 10);
+
+      return (
+        Number(activeDay) === day &&
+        activeMonth === month &&
+        activeYear === year
+      );
+    },
+    { day: targetDay, month: targetMonth, year: targetYear }
+  );
+
+  // Load booking table for the correct date
+  if (!alreadySelected) {
+    // Helper to read current visible calendar month/year
+    async function getVisibleMonthYear() {
+      return await page.evaluate(() => {
+        const monthText = document.querySelector(".ui-datepicker-month")?.textContent;
+        const yearText = document.querySelector(".ui-datepicker-year")?.textContent;
+
+        const monthIndex = new Date(`${monthText} 1, 2000`).getMonth();
+        return {
+          month: monthIndex,
+          year: parseInt(yearText, 10),
+        };
+      });
+    }
+
+    // Navigate months until correct one is shown
+    while (true) {
+      const { month, year } = await getVisibleMonthYear();
+
+      if (month === targetMonth && year === targetYear) break;
+      // navigate forward until date is found
+      await page.click(".ui-datepicker-next");
+      await page.waitForTimeout(250);
+    }
+
+    // Click correct day
+    const dayFound = await page.evaluate((day) => {
+      const days = Array.from(
+        document.querySelectorAll(".ui-datepicker-calendar td[data-handler='selectDay']")
+      );
+
+      const match = days.find(td =>
+        td.textContent.trim() === String(day)
+      );
+
+      if (match) {
+        match.querySelector("a")?.click();
+        return true;
+      }
+
+      return false;
+    }, targetDay);
+
+    if (!dayFound) {
+      throw new Error(
+        `Target date not found in calendar: ${targetYear}-${String(targetMonth + 1).padStart(2, "0")}-${String(targetDay).padStart(2, "0")}`
+      );
+    }
+  }
+  
+  // Wait for booking table to exist
   await page.waitForSelector("table.BookingSheet thead td.BookingSheetCategoryLabel", { timeout: 60000 });
 
 

@@ -4,24 +4,27 @@ import { checkVoyagerCourts } from "./venues/voyager.js";
 import { checkKuringGaiCourts } from "./venues/kuringgai.js"
 import { VENUES } from "./config/venues.js";
 
-export async function runCheck() {
+export async function runCheck(date) {
   const browser = await chromium.launch({ headless: true, slowMo: 200, args: ['--no-sandbox', '--disable-setuid-sandbox']});
-
   const context = await browser.newContext({
     userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
   });
 
   const results = [];
-  const date = new Date().toLocaleDateString('en-CA');
+
+  if (!(date instanceof Date)) {
+    throw new Error("runCheck expected a Date object");
+  }
+  const formattedDate = date.toLocaleDateString('en-CA');
 
   for (const venue of VENUES) {
   try {
     const page = await context.newPage();
     let venueResults = [];
     if (venue.owner === "kuringGai") {
-      venueResults = await checkKuringGaiCourts(page, venue, date);
+      venueResults = await checkKuringGaiCourts(page, venue, formattedDate);
     } else if (venue.owner === "voyager") {
-      venueResults = await checkVoyagerCourts(venue, page);
+      venueResults = await checkVoyagerCourts(venue, page, date);
     }
     results.push(...venueResults);
     await page.close();

@@ -3,6 +3,7 @@ import './App.css'
 import VenueCard from './components/VenueCard'
 import { VenueFilter } from './components/VenueFilter'
 import { SearchTimeSelector } from './components/SearchTimeSelector';
+import { SearchDateSelector } from './components/SearchDateSelector';
 import api from './apiClient';
 
 function App() {
@@ -13,10 +14,27 @@ function App() {
   const [refreshing, setRefreshing] = useState(false);
   const [searchHour, setSearchHour] = useState(new Date().getHours());
 
+  const today = new Date();
+  const oneMonthAhead = new Date();
+  oneMonthAhead.setMonth(today.getMonth() + 1);
+
+  const formatLocalDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // monthIndex is 0-based
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const [searchDate, setSearchDate] = useState(formatLocalDate(today));
+
   const fetchCourts = async () => {
     setRefreshing(true)
     try {
-      const res = await api.get("api/scan");
+      const res = await api.get("api/scan", {
+        params: {
+          date: searchDate,
+        }
+      });
       setCourtsData(res.data);
 
       const venues = [...new Set(res.data.map((court: any) => court.venue))] as string[];
@@ -71,8 +89,14 @@ useEffect(() => {
       </nav>
 
       {/* Search time selector */}
-      <span className='flex justify-start px-20'>  
-        <SearchTimeSelector onChange={setSearchHour} />
+      <span className='flex justify-start px-20'>
+        <div className="inline-flex mt-5 items-center gap-8 text-gray-700 bg-white rounded px-3 py-2 shadow">
+          <SearchTimeSelector onChange={setSearchHour} />
+          <SearchDateSelector
+            value={searchDate}
+            onChange={(date) => { setSearchDate(date); }}
+          />
+        </div>  
       </span>
     
       <div className="flex flex-1 px-20 py-5 gap-6 min-h-screen justify-center">

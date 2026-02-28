@@ -87,23 +87,20 @@ useEffect(() => {
           </button>
         </div>
       </nav>
-
-      {/* Search time selector */}
-      <span className='flex justify-start px-20'>
-        <div className="inline-flex mt-5 items-center gap-8 text-gray-700 bg-white rounded px-3 py-2 shadow">
-          <SearchTimeSelector onChange={setSearchHour} />
-          <SearchDateSelector
-            value={searchDate}
-            onChange={(date) => { setSearchDate(date); }}
-          />
-        </div>  
-      </span>
     
-      <div className="flex flex-1 px-20 py-5 gap-6 min-h-screen justify-center">
+      <div className="flex flex-col py-5 gap-6 flex-1 items-center">
+        {/* Search time selector */}
+          <div className="inline-flex mt-5 items-center gap-8 text-gray-700 bg-white rounded px-3 py-2 shadow">
+            <SearchTimeSelector onChange={setSearchHour} />
+            <SearchDateSelector
+              value={searchDate}
+              onChange={(date) => { setSearchDate(date); }}
+            />
+          </div>  
         {refreshing ? (
           <p className='text-lg font-medium text-blue-600 animate-pulse mt-100'>Finding courts near you...</p>
         ) : (
-          <div className="flex-1 space-y-4">
+          <div className="flex-1 w-full space-y-4 max-w-[1045px]">
             {selectedVenues.length > 0 ? (
               selectedVenues.map(venue => (
                 <VenueCard

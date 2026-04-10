@@ -19,6 +19,8 @@ function formatDuration(start: string, end: string): string {
 
 
 export default function VenueCard({ venue, courts, searchHour }: { venue: string; courts: Array<{ court: string; time: string; venue: string; link: string;}>; searchHour: number }) {
+  
+
   const [showAll, setShowAll] = useState(false);
 
   // Check if a venue is Willis Park (Voyager)
@@ -113,7 +115,6 @@ const getFullConsecutiveBlock = (
   const topCourts = Array.from(courtsByName.entries())
   .map(([courtName, times]) => {
     const block = getFullConsecutiveBlock(times, searchHour);
-    console.log(block)
     if (!block) return null;
 
     return {

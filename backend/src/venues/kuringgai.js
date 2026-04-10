@@ -1,61 +1,66 @@
 import { isWithinNextTwoHours } from "../utils/time.js";
 
+function formatToHHMM(iso) {
+  const d = new Date(iso);
+  const hh = d.getUTCHours().toString().padStart(2, "0");
+  const mm = d.getUTCMinutes().toString().padStart(2, "0");
+  return `${hh}:${mm}`;
+}
+
+function isWithinOperatingHours(time) {
+  const [h, m] = time.split(":").map(Number);
+  const minutes = h * 60 + m;
+
+  const start = 6 * 60;   // 06:00
+  const end = 22 * 60;    // 22:00
+
+  return minutes >= start && minutes <= end;
+}
+
+function columnToTime(col) {
+  const minutes = (col - 1) * 15;
+  const hh = Math.floor(minutes / 60).toString().padStart(2, "0");
+  const mm = (minutes % 60).toString().padStart(2, "0");
+  return `${hh}:${mm}`;
+}
+
 export async function checkKuringGaiCourts(page, venue, date) {
   console.log(`⏳ Checking ${venue.name}...`);
 
   await page.goto( `${venue.url}${date}`, { waitUntil: "domcontentloaded" });
 
-  await page.waitForSelector("venue-bookable-schedule ul.schedule-bar.daybar li.li-timebar", { timeout: 60000 });
-
-  const courtContainers = await page.$$("div.schedule-group");
+  await page.waitForSelector('[data-testid="schedule-bar-slot"]', {
+    timeout: 60000
+  });
+  const courtGroups = await page.$$('.schedule-group');
   const availableSlots = [];
 
-  for (const courtDiv of courtContainers) {
-    const courtNameHandle = await courtDiv.$("a.h5-base-15-txt"); // e.g., "Synthetic grass court 4"
+  for (const group of courtGroups) {
+    // 1. Get court name
+    const courtNameHandle = await group.$("a.h5-base-15-txt"); // e.g., "Synthetic grass court 4"
     const courtName = courtNameHandle ? await courtNameHandle.innerText() : "Unknown Court";
     // console.log("🏟 Court found:", courtName);
 
-    // Obtain all timebars inside this court container
-    const slots = await courtDiv.$$eval("li.li-timebar", nodes =>
-      nodes.map(n => {
-        const statusBar = n.querySelector(".status-bar");
-        const available =
-          statusBar &&
-          !statusBar.className.includes("status-past") &&
-          !statusBar.className.includes("status-lead-time") && 
-          !statusBar.className.includes("status-closed") && 
-          !statusBar.className.includes("status-booked");
-        // const tooltip = statusBar?.getAttribute("uib-tooltip-html") || "No tooltip";
+    // 2. Get all slots within this court
+    const slots = await group.$$('[data-testid="schedule-bar-slot"]');
 
-        // Extract start time from timebar class
-        const classMatch = n.className.match(/h(\d+)m(\d+)/);
-        let hour = 0, minute = 0;
-        if (classMatch) {
-          hour = parseInt(classMatch[1], 10); // 24h format
-          minute = parseInt(classMatch[2], 10);
-        }
-        return {
-          hour,
-          minute,
-          available,
-        };
-      })
-    );
-    // Filter out slots from 10pm to 5am
-    const filteredSlots = slots.filter(s => s.available && s.hour >= 5 && s.hour < 22);
+    for (const slot of slots) {
+      const isBlocked = await slot.$(
+        '.bk-schedule-bar__blocked-block, .bk-schedule-bar__unavailable-block'
+      );
+      if (isBlocked) continue;
 
-    // Keep only available slots
-    const availableOnly = filteredSlots.filter(s => s.available);
+      const gridColumn = await slot.evaluate(el => {
+        const style = el.getAttribute("style") || "";
+        const match = style.match(/grid-area:\s*\d+\s*\/\s*(\d+)/);
+        return match ? parseInt(match[1], 10) : null;
+      });
 
-    // Add court name to each slot
-    for (const slot of availableOnly) {
-      // const hour12 = slot.hour % 12 === 0 ? 12 : slot.hour % 12;
-      // const ampm = slot.hour < 12 ? "am" : "pm";
+      if (!gridColumn) continue;
 
-      // Uncomment the above and use this if you want '9:45pm' format
-      // const timeText = `${hour12}:${minuteStr}${ampm}`; 
-      const minuteStr = slot.minute.toString().padStart(2, "0");
-      const timeText = `${slot.hour}:${minuteStr}`;
+      const timeText = columnToTime(gridColumn);
+
+      if (!isWithinOperatingHours(timeText)) continue;
 
       availableSlots.push({
         venue: venue.name,
@@ -65,17 +70,5 @@ export async function checkKuringGaiCourts(page, venue, date) {
       });
     }
   }
-
-  // Only show available slots within the next 2 hours
-  // for (const slot of availableSlots) {
-
-  //     const slotDate = new Date(slot.time); // adjust time formt per site
-
-  //     if (isWithinNextTwoHours(slotDate)) {
-  //       results.push(slot);
-  //     }
-  //   }
-
-  // return results;
   return availableSlots;
 }
